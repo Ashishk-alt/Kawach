@@ -31,6 +31,19 @@ const getYouTubeEmbedUrl = (videoUrl) => {
   }
 };
 
+const readCompletedVideos = () => {
+  if (typeof window === "undefined" || !window.localStorage) {
+    return [];
+  }
+
+  try {
+    const savedVideos = window.localStorage.getItem("completedVideos");
+    return savedVideos ? JSON.parse(savedVideos) : [];
+  } catch {
+    return [];
+  }
+};
+
 const Awareness = () => {
   const [search, setSearch] = useState("");
   const { language } = useLanguage();
@@ -38,11 +51,7 @@ const Awareness = () => {
   const [category, setCategory] = useState("All");
   const [selectedVideo, setSelectedVideo] = useState(null);
 
-  const [completed, setCompleted] = useState(() => {
-    return JSON.parse(
-      localStorage.getItem("completedVideos") || "[]"
-    );
-  });
+  const [completed, setCompleted] = useState(() => readCompletedVideos());
 
   const t = translations[language].awareness;
 
@@ -142,10 +151,16 @@ const Awareness = () => {
 
     setCompleted(updated);
 
-    localStorage.setItem(
-      "completedVideos",
-      JSON.stringify(updated)
-    );
+    if (typeof window !== "undefined" && window.localStorage) {
+      try {
+        window.localStorage.setItem(
+          "completedVideos",
+          JSON.stringify(updated)
+        );
+      } catch {
+        // Ignore storage errors so the app still works in restricted environments.
+      }
+    }
   };
 
   // ================= PROGRESS =================

@@ -2,10 +2,20 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 const ThemeContext = createContext();
 
+const readStoredTheme = () => {
+  if (typeof window === "undefined" || !window.localStorage) {
+    return "dark";
+  }
+
+  try {
+    return window.localStorage.getItem("theme") || "dark";
+  } catch {
+    return "dark";
+  }
+};
+
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("theme") || "dark";
-  });
+  const [theme, setTheme] = useState(() => readStoredTheme());
 
   useEffect(() => {
     const root = document.documentElement;
@@ -16,7 +26,13 @@ export const ThemeProvider = ({ children }) => {
       root.classList.remove("dark");
     }
 
-    localStorage.setItem("theme", theme);
+    if (typeof window !== "undefined" && window.localStorage) {
+      try {
+        window.localStorage.setItem("theme", theme);
+      } catch {
+        // Ignore storage errors so the app still works in restricted environments.
+      }
+    }
   }, [theme]);
 
   const toggleTheme = () => {

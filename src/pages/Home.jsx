@@ -24,19 +24,30 @@ const Home = () => {
 
   useEffect(() => {
     const loadProgress = () => {
-      const completed = JSON.parse(
-        localStorage.getItem("completedVideos") || "[]"
-      );
+      if (typeof window === "undefined" || !window.localStorage) {
+        setCompletedVideos(0);
+        return;
+      }
 
-      setCompletedVideos(completed.length);
+      try {
+        const savedVideos = window.localStorage.getItem("completedVideos");
+        const completed = savedVideos ? JSON.parse(savedVideos) : [];
+        setCompletedVideos(Array.isArray(completed) ? completed.length : 0);
+      } catch {
+        setCompletedVideos(0);
+      }
     };
 
     loadProgress();
 
-    window.addEventListener("storage", loadProgress);
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", loadProgress);
+    }
 
     return () => {
-      window.removeEventListener("storage", loadProgress);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("storage", loadProgress);
+      }
     };
   }, []);
 
