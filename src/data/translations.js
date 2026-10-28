@@ -65,6 +65,7 @@ const translations = {
     assessment: {
       badge: "CYBERSECURITY ASSESSMENT",
       title: "Test Your Cyber Awareness",
+      chooseCategory: "Choose a topic to take its 10-question assessment.",
 
       submit: "Submit Answer",
       next: "Next Question",
@@ -174,6 +175,7 @@ const translations = {
     assessment: {
       badge: "साइबर सुरक्षा मूल्यांकन",
       title: "अपनी साइबर जागरूकता जाँचें",
+      chooseCategory: "10 प्रश्नों वाला मूल्यांकन शुरू करने के लिए एक विषय चुनें।",
 
       submit: "उत्तर जमा करें",
       next: "अगला प्रश्न",

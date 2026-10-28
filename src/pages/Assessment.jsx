@@ -10,7 +10,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-import questions from "../data/questions";
+import assessmentCategories from "../data/questions";
 import { useLanguage } from "../context/LanguageContext";
 import translations from "../data/translations";
 
@@ -19,17 +19,19 @@ const Assessment = () => {
 
   const t = translations[language].assessment;
 
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
 
+  const questions = selectedCategory?.questions ?? [];
   const question = questions[currentQuestion];
 
-  const questionText = question.question[language];
-  const options = question.options[language];
-  const explanation = question.explanation[language];
+  const questionText = question?.question[language];
+  const options = question?.options[language];
+  const explanation = question?.explanation[language];
 
   const handleSubmit = () => {
     if (selectedAnswer === null) return;
@@ -53,6 +55,7 @@ const Assessment = () => {
   };
 
   const restartAssessment = () => {
+    setSelectedCategory(null);
     setCurrentQuestion(0);
     setSelectedAnswer(null);
     setSubmitted(false);
@@ -61,7 +64,7 @@ const Assessment = () => {
   };
 
   const percentage = Math.round(
-    (score / questions.length) * 100
+    (score / (questions.length || 1)) * 100
   );
 
   const getPerformance = () => {
@@ -95,6 +98,53 @@ const Assessment = () => {
   };
 
   /* ================= RESULT ================= */
+
+  if (!selectedCategory) {
+    return (
+      <div className="min-h-screen px-6 py-12">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-10 text-center">
+            <p className="text-sm font-semibold uppercase tracking-widest text-cyan-500">
+              {t.badge}
+            </p>
+            <h1 className="mt-3 text-3xl font-black sm:text-4xl">
+              {t.title}
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
+              {t.chooseCategory}
+            </p>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {assessmentCategories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => {
+                  setSelectedCategory(category);
+                  setCurrentQuestion(0);
+                  setSelectedAnswer(null);
+                  setSubmitted(false);
+                  setScore(0);
+                  setFinished(false);
+                }}
+                className="rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm transition hover:-translate-y-1 hover:border-cyan-400 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900/60"
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-500">
+                  <ShieldCheck size={23} />
+                </span>
+                <h2 className="mt-5 text-lg font-bold">
+                  {category.name[language]}
+                </h2>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                  {category.questions.length} {t.questions}
+                </p>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (finished) {
     const performance = getPerformance();
@@ -270,7 +320,7 @@ const Assessment = () => {
           <div className="flex flex-wrap items-center justify-between gap-3">
 
             <span className="rounded-full bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-500">
-              {question.category}
+              {selectedCategory.name[language]}
             </span>
 
            <span

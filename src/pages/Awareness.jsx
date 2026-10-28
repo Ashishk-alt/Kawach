@@ -5,6 +5,32 @@ import VideoCard from "../components/VideoCard";
 import { useLanguage } from "../context/LanguageContext";
 import translations from "../data/translations";
 
+const getYouTubeEmbedUrl = (videoUrl) => {
+  try {
+    const url = new URL(videoUrl);
+    const host = url.hostname.replace(/^www\./, "");
+    let videoId;
+
+    if (host === "youtu.be") {
+      videoId = url.pathname.slice(1).split("/")[0];
+    } else if (
+      ["youtube.com", "m.youtube.com", "youtube-nocookie.com"].includes(host)
+    ) {
+      if (url.pathname === "/watch") {
+        videoId = url.searchParams.get("v");
+      } else {
+        videoId = url.pathname.match(/^\/(?:embed|shorts|live)\/([^/]+)/)?.[1];
+      }
+    }
+
+    return videoId && /^[\w-]{11}$/.test(videoId)
+      ? `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`
+      : null;
+  } catch {
+    return null;
+  }
+};
+
 const Awareness = () => {
   const [search, setSearch] = useState("");
   const { language } = useLanguage();
@@ -28,6 +54,10 @@ const Awareness = () => {
     "OTP Fraud": {
       en: "OTP Fraud",
       hi: "OTP धोखाधड़ी",
+    },
+    "Banking Fraud": {
+      en: "Banking Fraud",
+      hi: "बैंकिंग धोखाधड़ी",
     },
     "UPI Fraud": {
       en: "UPI Fraud",
@@ -135,6 +165,9 @@ const Awareness = () => {
 
   const isTrainingComplete =
     completedVideos === totalVideos && totalVideos > 0;
+  const selectedVideoEmbedUrl = selectedVideo
+    ? getYouTubeEmbedUrl(selectedVideo.video)
+    : null;
 
   return (
     <div className="min-h-screen">
@@ -412,17 +445,28 @@ const Awareness = () => {
 
             <div className="aspect-video bg-black">
 
-              <video
-                src={selectedVideo.video}
-                controls
-                autoPlay
-                className="h-full w-full object-contain"
-                onEnded={() =>
-                  markCompleted(
-                    selectedVideo.id
-                  )
-                }
-              />
+              {selectedVideoEmbedUrl ? (
+                <iframe
+                  src={selectedVideoEmbedUrl}
+                  title={selectedVideo.title[language]}
+                  className="h-full w-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              ) : (
+                <video
+                  src={selectedVideo.video}
+                  controls
+                  autoPlay
+                  className="h-full w-full object-contain"
+                  onEnded={() =>
+                    markCompleted(
+                      selectedVideo.id
+                    )
+                  }
+                />
+              )}
 
             </div>
 
